@@ -1,0 +1,8 @@
+module github.com/nadav-rahimi/ascii-image-creator
+
+go 1.14
+
+require (
+	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
+	golang.org/x/image v0.0.0-20201208152932-35266b937fa6
+)
