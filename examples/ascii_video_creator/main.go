@@ -16,21 +16,13 @@ import (
 	"strings"
 )
 
-// TODO build all executables in docker
-
-// go build -o converter.exe && converter.exe --input davidguettafloyd.mp4 --output test.mkv
-// go build -o converter.exe && converter.exe --input merged_output.mkv --output akira_v2.mkv
-// go build -o converter.exe && converter.exe --input volttackle.mkv --output pokemon_inconsolata.mkv
-
-// go generate && go build -o converter.exe && converter.exe --input volttackle-short.mkv --output pokemon_inconsolata_shhort.mkv --charset extended --fontsize 40
-// go build -o converter.exe && converter.exe --input merged_output.mkv --output akira_big.mkv --charset extended --fontsize 30
 func main() {
 	// Parse in runtime flags
 	var inputFlag = flag.String("input", "", "Path to the video you want to make ascii")
 	var outputFlag = flag.String("output", "", "Name of the output video you want to make e.g. 'test.mkv'")
-	var charset = flag.String("charset", "limited", "Type of charset you want to use, 'limited' or 'extended'. Default is 'limited'")
+	var charset = flag.String("charset", "limited", "Type of charset you want to use, 'limited' or 'extended'")
 	var fontPath = flag.String("font", "", "Path to a .ttf font file which the characters will be rendered as")
-	var fontSize = flag.Float64("fontsize", 14, "Font size in points (NOT pixels). Default is 14pt")
+	var fontSize = flag.Float64("fontsize", 14, "Font size in points (NOT pixels)")
 	flag.Parse()
 
 	// Verifies the flags have been filled in
@@ -67,7 +59,7 @@ func main() {
 	if *fontPath == "" {
 		f, err := pkger.Open("/convertor/Inconsolata-Bold.ttf")
 		if err != nil {
-			log.Fatal("Error loading font: ",err)
+			log.Fatal("Error loading font: ", err)
 		}
 		fontBytes, err = ioutil.ReadAll(f)
 		if err != nil {
@@ -83,9 +75,9 @@ func main() {
 
 	// Set up the ascii config
 	ac := &ascii.AsciiConfig{
-		CharSet:  cs,
+		CharSet:   cs,
 		FontBytes: fontBytes,
-		FontSize: *fontSize,
+		FontSize:  *fontSize,
 	}
 
 	// Creating the input and output temp directories
@@ -98,7 +90,8 @@ func main() {
 		log.Fatal("Cannot create ascii frames dir: ", err)
 	}
 	asciiFramesDir = filepath.ToSlash(asciiFramesDir) + "/"
-	defer os.RemoveAll(framesDir); defer os.RemoveAll(asciiFramesDir)
+	defer os.RemoveAll(framesDir)
+	defer os.RemoveAll(asciiFramesDir)
 
 	// Exports the input video into its seperate frames in the temporary frames folder
 	fmt.Println("Exporting video to frames:")
