@@ -16,12 +16,14 @@ import (
 	"strings"
 )
 
+// TODO add readme for both lib and this example
+
 func main() {
 	// Parse in runtime flags
 	var inputFlag = flag.String("input", "", "Path to the video you want to make ascii")
 	var outputFlag = flag.String("output", "", "Name of the output video you want to make e.g. 'test.mkv'")
 	var charset = flag.String("charset", "limited", "Type of charset you want to use, 'limited' or 'extended'")
-	var fontPath = flag.String("font", "", "Path to a .ttf font file which the characters will be rendered as")
+	var fontPath = flag.String("font", "", "Path to a .ttf font file which the characters will be rendered as. If empty, 'inconsolata bold' is used")
 	var fontSize = flag.Float64("fontsize", 14, "Font size in points (NOT pixels)")
 	flag.Parse()
 
@@ -57,7 +59,7 @@ func main() {
 	// Get the font file as bytes and reading its data
 	var fontBytes []byte
 	if *fontPath == "" {
-		f, err := pkger.Open("/convertor/Inconsolata-Bold.ttf")
+		f, err := pkger.Open("/assets/Inconsolata-Bold.ttf")
 		if err != nil {
 			log.Fatal("Error loading font: ", err)
 		}
