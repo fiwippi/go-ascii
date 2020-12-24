@@ -6,6 +6,7 @@ import (
 	"github.com/nadav-rahimi/ascii-image-creator/pkg/ascii"
 	"github.com/nadav-rahimi/ascii-image-creator/pkg/images"
 	"io/ioutil"
+	"log"
 )
 
 func CreateAscii(inputDir, outputDir string, ac *ascii.AsciiConfig) error {
@@ -23,12 +24,19 @@ func CreateAscii(inputDir, outputDir string, ac *ascii.AsciiConfig) error {
 				return err
 			}
 
-			ascii_img, err := ascii.GenerateAsciiImage(img, ac)
-			if err != nil {
-				return err
+			generate := func(x, y int) ascii.RGB {
+				r, g, b, _ := img.At(x, y).RGBA()
+				r, g, b = r>>8, g>>8, b>>8 // Colours
+				return ascii.RGB{uint8(r), uint8(g), uint8(b)}
 			}
 
-			err = images.SaveImage(outputDir + f.Name(), ascii_img)
+			width, height := img.Bounds().Max.X, img.Bounds().Max.Y
+			ascii_img, err := ac.GenerateAsciiImage(width, height, generate)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			err = images.SaveImage(outputDir+f.Name(), ascii_img)
 			if err != nil {
 				return err
 			}

@@ -16,8 +16,6 @@ import (
 	"strings"
 )
 
-// TODO add readme for both lib and this example
-
 func main() {
 	// Parse in runtime flags
 	var inputFlag = flag.String("input", "", "Path to the video you want to make ascii")

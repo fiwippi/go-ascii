@@ -27,9 +27,10 @@ func ReadImage(path string) (image.Image, error) {
 
 func SaveImage(path string, img image.Image) error {
 	var encodeMethod int = 0
-	if strings.HasSuffix(path, ".jpeg") || strings.HasSuffix(path, ".jpg") {
+	pathLower := strings.ToLower(path)
+	if strings.HasSuffix(pathLower, ".jpeg") || strings.HasSuffix(pathLower, ".jpg") {
 		encodeMethod = 1
-	} else if strings.HasSuffix(path, ".png") {
+	} else if strings.HasSuffix(pathLower, ".png") {
 		encodeMethod = 2
 	} else {
 		return errors.New("File must be .jpeg/.jpg or .png")

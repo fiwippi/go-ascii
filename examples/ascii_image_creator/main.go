@@ -14,9 +14,6 @@ import (
 	"strings"
 )
 
-// TODO add readme for both lib and this example
-// TODO env sample e.g. /path/to/ffmpeg and ignore
-
 func fileExists(path string) bool {
 	_, err := os.Stat(path)
 	return !os.IsNotExist(err)
@@ -79,7 +76,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	ascii_img, err := ascii.GenerateAsciiImage(img, ac)
+	generate := func(x, y int) ascii.RGB {
+		r, g, b, _ := img.At(x, y).RGBA()
+		r, g, b = r>>8, g>>8, b>>8 // Colours
+		return ascii.RGB{uint8(r), uint8(g), uint8(b)}
+	}
+
+	width, height := img.Bounds().Max.X, img.Bounds().Max.Y
+	ascii_img, err := ac.GenerateAsciiImage(width, height, generate)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -89,6 +93,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// TODO output settings of conversion
 	fmt.Println("Conversion Done")
 }
