@@ -11,7 +11,7 @@ go get github.com/nadav-rahimi/ascii-image-creator
 ### usage
 ```go
 // Get the font file as bytes and reading its data
-fontBytes, err := ioutil.ReadFile(*fontPath)
+fontBytes, err := ioutil.ReadFile("font_file.ttf")
 if err != nil {
     log.Fatal("Error reading font data: ", err)
 }
@@ -23,8 +23,8 @@ ac := &ascii.AsciiConfig{
     FontSize:  14,
 }
 
-// Processes the video frames into ascii frames
-img, err := images.ReadImage(imgPath)
+// Reads in the image
+img, err := images.ReadImage("image.png")
 if err != nil {
     log.Fatal(err)
 }
