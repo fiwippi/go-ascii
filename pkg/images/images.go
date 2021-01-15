@@ -10,6 +10,15 @@ import (
 	"strings"
 )
 
+const (
+	JPEG = iota
+	PNG
+)
+
+var pngEnc = &png.Encoder{
+	CompressionLevel: png.BestCompression,
+}
+
 func ReadImage(path string) (image.Image, error) {
 	reader, err := os.Open(path)
 	if err != nil {
@@ -26,12 +35,13 @@ func ReadImage(path string) (image.Image, error) {
 }
 
 func SaveImage(path string, img image.Image) error {
-	var encodeMethod int = 0
 	pathLower := strings.ToLower(path)
+
+	var encodeMethod int
 	if strings.HasSuffix(pathLower, ".jpeg") || strings.HasSuffix(pathLower, ".jpg") {
-		encodeMethod = 1
+		encodeMethod = JPEG
 	} else if strings.HasSuffix(pathLower, ".png") {
-		encodeMethod = 2
+		encodeMethod = PNG
 	} else {
 		return errors.New("File must be .jpeg/.jpg or .png")
 	}
@@ -43,12 +53,12 @@ func SaveImage(path string, img image.Image) error {
 	defer toimg.Close()
 
 	switch encodeMethod {
-	case 1:
+	case JPEG:
 		if err = jpeg.Encode(toimg, img, nil); err != nil {
 			return err
 		}
-	case 2:
-		if err = png.Encode(toimg, img); err != nil {
+	case PNG:
+		if err = pngEnc.Encode(toimg, img); err != nil {
 			return err
 		}
 	}

@@ -15,8 +15,11 @@ import (
 	"time"
 )
 
-var FFmpegPath string = "C:/Users/nadav/Documents/Nadav/Music/ffmpeg/bin/ffmpeg.exe"
-var FFprobePath string = "C:/Users/nadav/Documents/Nadav/Music/ffmpeg/bin/ffprobe.exe"
+var (
+	FFmpegPath  string = "ffmpeg"
+	FFprobePath string = "ffmpeg"
+	Debug              = false
+)
 
 // Converts a sexagesimal time (hh:mm:ss.ms) to seconds
 func durToSec(t string) (float64, error) {
@@ -94,6 +97,7 @@ func progress(pType string, total float64, out chan int64, stderrIn io.ReadClose
 	defer stderrIn.Close()
 
 	scanner := bufio.NewScanner(stderrIn)
+
 	split := func(data []byte, atEOF bool) (advance int, token []byte, spliterror error) {
 		if atEOF && len(data) == 0 {
 			return 0, nil, nil
@@ -116,6 +120,9 @@ func progress(pType string, total float64, out chan int64, stderrIn io.ReadClose
 
 	for scanner.Scan() {
 		line := scanner.Text()
+		if Debug {
+			log.Println(line)
+		}
 		var re = regexp.MustCompile(`=\s+`)
 		st := re.ReplaceAllString(line, `=`)
 		if pType == "Duration" && strings.Contains(st, "time=") {
@@ -127,7 +134,7 @@ func progress(pType string, total float64, out chan int64, stderrIn io.ReadClose
 			counter := (timesec * 100) / total
 			out <- int64(counter)
 		}
-		if pType == "Frames"  && strings.Contains(st, "frame=") {
+		if pType == "Frames" && strings.Contains(st, "frame=") {
 			currentFrame := strings.Split(strings.Split(st, "frame=")[1], " ")[0]
 			if currentFrame == "" {
 				out <- -1
@@ -139,7 +146,6 @@ func progress(pType string, total float64, out chan int64, stderrIn io.ReadClose
 			}
 			counter := (float64(frameInt) * 100) / total
 			out <- int64(counter)
-
 		}
 	}
 	out <- -1

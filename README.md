@@ -46,3 +46,7 @@ if err != nil {
     log.Fatal(err)
 }
 ```
+
+### todo 
+
+- [ ] better image compression

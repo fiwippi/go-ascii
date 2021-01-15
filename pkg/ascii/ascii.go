@@ -15,6 +15,7 @@ import (
 const (
 	CHAR_SET_LIMITED = iota
 	CHAR_SET_EXTENDED
+	CHAR_SET_BLOCK
 )
 
 type RGB struct {
@@ -33,6 +34,10 @@ type AsciiConfig struct {
 }
 
 func brightnessToAscii(b uint8, ac *AsciiConfig) string {
+	if ac.CharSet == CHAR_SET_BLOCK {
+		return "█"
+	}
+
 	var ascii string
 	if ac.CharSet == CHAR_SET_EXTENDED {
 		ascii = ".'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
@@ -78,7 +83,7 @@ func (ac *AsciiConfig) GenerateAsciiImage(width, height int, getColour func(x, y
 	opts := truetype.Options{Size: ac.FontSize}
 	face := truetype.NewFace(f, &opts)
 
-	fontWidthPixelFixed, _ := face.GlyphAdvance(rune('B'))
+	fontWidthPixelFixed, _ := face.GlyphAdvance(rune('█'))
 	fontWidthPixel := fontWidthPixelFixed.Ceil()
 	fontHeightPixel := face.Metrics().Ascent.Round()
 
