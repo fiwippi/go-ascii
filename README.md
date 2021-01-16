@@ -30,9 +30,9 @@ if err != nil {
 }
 
 generate := func(x, y int) ascii.RGB {
-r, g, b, a := img.At(x, y).RGBA()
-r, g, b, a = r>>8, g>>8, b>>8, a>>8 // Colours must be 8 bit
-return ascii.RGBA{uint8(r), uint8(g), uint8(b), uint8(a)}
+    r, g, b, a := img.At(x, y).RGBA()
+    r, g, b, a = r>>8, g>>8, b>>8, a>>8 // Colours must be 8 bit
+    return ascii.RGBA{uint8(r), uint8(g), uint8(b), uint8(a)}
 }
 
 width, height := img.Bounds().Max.X, img.Bounds().Max.Y
