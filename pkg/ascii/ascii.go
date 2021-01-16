@@ -18,13 +18,13 @@ const (
 	CHAR_SET_BLOCK
 )
 
-type RGB struct {
-	R, G, B uint8
+type RGBA struct {
+	R, G, B, A uint8
 }
 
 // Implements so that image.NewUniform can be used
-func (rgb RGB) RGBA() (uint32, uint32, uint32, uint32) {
-	return uint32(rgb.R) << 8, uint32(rgb.G) << 8, uint32(rgb.B) << 8, 255 << 8
+func (rgba RGBA) RGBA() (uint32, uint32, uint32, uint32) {
+	return uint32(rgba.R) << 8, uint32(rgba.G) << 8, uint32(rgba.B) << 8, uint32(rgba.A) << 8
 }
 
 type Coord struct {
@@ -38,6 +38,7 @@ type AsciiConfig struct {
 	Interpolate  bool
 	InterpWeight float64
 	InterpMemory map[Coord]float64
+	Transparency bool
 }
 
 func NewAsciiConfig() *AsciiConfig {
@@ -55,7 +56,7 @@ func pntToDPI(pnt float64) float64 {
 	return (6.756756756756757 * pnt) - 7.432432432432421
 }
 
-func drawAsciiChar(img *image.RGBA, x, y int, char string, c *freetype.Context, clr RGB) error {
+func drawAsciiChar(img *image.RGBA, x, y int, char string, c *freetype.Context, clr RGBA) error {
 	c.SetDst(img)
 	c.SetSrc(image.NewUniform(clr))
 
@@ -82,7 +83,7 @@ func (ac *AsciiConfig) brightnessToAscii(b uint8) string {
 	return string(ascii[index])
 }
 
-func (ac *AsciiConfig) GenerateAsciiImage(width, height int, getColour func(x, y int) RGB) (image.Image, error) {
+func (ac *AsciiConfig) GenerateAsciiImage(width, height int, getColour func(x, y int) RGBA) (image.Image, error) {
 	// Read the font data
 	bounds := image.Rect(0, 0, width, height)
 
@@ -107,7 +108,11 @@ func (ac *AsciiConfig) GenerateAsciiImage(width, height int, getColour func(x, y
 
 	// Create a new image to hold the ascii characters
 	ascii_img := image.NewRGBA(bounds)
-	draw.Draw(ascii_img, ascii_img.Bounds(), image.Black, image.Point{}, draw.Over)
+	var background = image.Black
+	if ac.Transparency {
+		background = image.Transparent
+	}
+	draw.Draw(ascii_img, ascii_img.Bounds(), background, image.Point{}, draw.Over)
 
 	// Draw the new image
 	for y := bounds.Min.Y; y < height; y++ {

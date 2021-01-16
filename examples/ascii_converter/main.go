@@ -24,7 +24,7 @@ func main() {
 	// Variables for the runtime flags
 	var inputPath, outputPath, charset, fontPath, optimise string
 	var fontSize, intpf float64
-	var overwrite, interpolate bool
+	var overwrite, interpolate, transparency bool
 
 	// Parse in runtime flags
 	flag.StringVar(&inputPath, "input", "", "Path to the image/video you want to make ascii. Images must be jpeg or png")
@@ -37,6 +37,7 @@ func main() {
 	flag.BoolVar(&overwrite, "overwrite", false, "Whether to automatically overwrite the output file if one already exists without prompting")
 	flag.BoolVar(&convertor.Debug, "verbose", false, "Prints verbose information")
 	flag.BoolVar(&interpolate, "interpolate", true, "Whether to use interpolation for video rendering")
+	flag.BoolVar(&transparency, "transparency", false, "Whether to use a transparent background for the ascii images")
 	flag.StringVar(&convertor.FFmpegPath, "ffmpeg", "ffmpeg", "Path to the ffmpeg binary")
 	flag.StringVar(&convertor.FFprobePath, "ffprobe", "ffprobe", "Path to the ffprobe binary")
 	flag.Parse()
@@ -92,6 +93,7 @@ func main() {
 	ac.FontBytes = fontBytes
 	ac.InterpWeight = intpf
 	ac.Interpolate = interpolate
+	ac.Transparency = transparency
 
 	// Sets the encoding
 	var encoding images.CompressionLevel

@@ -82,10 +82,10 @@ func createAscii(inputDir, outputDir string, ac *ascii.AsciiConfig, cl images.Co
 				return err
 			}
 
-			generate := func(x, y int) ascii.RGB {
-				r, g, b, _ := img.At(x, y).RGBA()
-				r, g, b = r>>8, g>>8, b>>8 // Colours
-				return ascii.RGB{uint8(r), uint8(g), uint8(b)}
+			generate := func(x, y int) ascii.RGBA {
+				r, g, b, a := img.At(x, y).RGBA()
+				r, g, b, a = r>>8, g>>8, b>>8, a>>8 // Colours
+				return ascii.RGBA{uint8(r), uint8(g), uint8(b), uint8(a)}
 			}
 
 			width, height := img.Bounds().Max.X, img.Bounds().Max.Y
