@@ -49,4 +49,5 @@ if err != nil {
 
 ### todo 
 
+- [x] video interpolation
 - [ ] better image compression

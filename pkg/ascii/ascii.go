@@ -27,26 +27,28 @@ func (rgb RGB) RGBA() (uint32, uint32, uint32, uint32) {
 	return uint32(rgb.R) << 8, uint32(rgb.G) << 8, uint32(rgb.B) << 8, 255 << 8
 }
 
-type AsciiConfig struct {
-	CharSet   int
-	FontSize  float64
-	FontBytes []byte
+type Coord struct {
+	X, Y int
 }
 
-func brightnessToAscii(b uint8, ac *AsciiConfig) string {
-	if ac.CharSet == CHAR_SET_BLOCK {
-		return "█"
-	}
+type AsciiConfig struct {
+	CharSet      int
+	FontSize     float64
+	FontBytes    []byte
+	Interpolate  bool
+	InterpWeight float64
+	InterpMemory map[Coord]float64
+}
 
-	var ascii string
-	if ac.CharSet == CHAR_SET_EXTENDED {
-		ascii = ".'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
-	} else if ac.CharSet == CHAR_SET_LIMITED {
-		ascii = " .:-=+*#%@"
+func NewAsciiConfig() *AsciiConfig {
+	return &AsciiConfig{
+		CharSet:      CHAR_SET_LIMITED,
+		FontSize:     14,
+		FontBytes:    nil,
+		Interpolate:  true,
+		InterpWeight: 0.6,
+		InterpMemory: make(map[Coord]float64),
 	}
-
-	index := int(float32(b) / 255 * float32(len(ascii)-1))
-	return string(ascii[index])
 }
 
 func pntToDPI(pnt float64) float64 {
@@ -62,6 +64,22 @@ func drawAsciiChar(img *image.RGBA, x, y int, char string, c *freetype.Context, 
 		return err
 	}
 	return nil
+}
+
+func (ac *AsciiConfig) brightnessToAscii(b uint8) string {
+	if ac.CharSet == CHAR_SET_BLOCK {
+		return "█"
+	}
+
+	var ascii string
+	if ac.CharSet == CHAR_SET_EXTENDED {
+		ascii = ".'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
+	} else if ac.CharSet == CHAR_SET_LIMITED {
+		ascii = " .:-=+*#%@"
+	}
+
+	index := int(float32(b) / 255 * float32(len(ascii)-1))
+	return string(ascii[index])
 }
 
 func (ac *AsciiConfig) GenerateAsciiImage(width, height int, getColour func(x, y int) RGB) (image.Image, error) {
@@ -99,10 +117,22 @@ func (ac *AsciiConfig) GenerateAsciiImage(width, height int, getColour func(x, y
 				clr := getColour(x, y)
 
 				// Get a brightness value for the image
-				brightness := uint8(0.299*float64(clr.R) + 0.587*float64(clr.G) + 0.114*float64(clr.B))
+				brightness := 0.299*float64(clr.R) + 0.587*float64(clr.G) + 0.114*float64(clr.B)
+
+				// Interpolate the value if interpolation is turned on
+				var interpolatedBrightness = brightness
+				if ac.Interpolate {
+					// If interpolation memory exists for this pixel then interpolate the brightness
+					if oldBrightness, found := ac.InterpMemory[Coord{x, y}]; found {
+						interpolatedBrightness = (float64(brightness) * ac.InterpWeight) + (float64(oldBrightness) * (1 - ac.InterpWeight))
+					}
+
+					// Store the brightness value in memory
+					ac.InterpMemory[Coord{x, y}] = interpolatedBrightness
+				}
 
 				// Get the ascii string for the corresponding brightness value
-				err = drawAsciiChar(ascii_img, x, y, brightnessToAscii(brightness, ac), c, clr)
+				err = drawAsciiChar(ascii_img, x, y, ac.brightnessToAscii(uint8(interpolatedBrightness)), c, clr)
 				if err != nil {
 					return nil, err
 				}

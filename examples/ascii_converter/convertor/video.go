@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 )
 
-func ConvertVideo(vidPath, outputPath string, ac *ascii.AsciiConfig) error {
+func ConvertVideo(vidPath, outputPath string, ac *ascii.AsciiConfig, cl images.CompressionLevel) error {
 	// Creating the input and output temp directories
 	var framesDir, asciiFramesDir string
 	var err error
@@ -42,7 +42,7 @@ func ConvertVideo(vidPath, outputPath string, ac *ascii.AsciiConfig) error {
 
 	// Processes the video frames into ascii frames
 	fmt.Println("Processing frames:")
-	err = createAscii(framesDir, asciiFramesDir, ac)
+	err = createAscii(framesDir, asciiFramesDir, ac, cl)
 	if err != nil {
 		log.Fatal("Error encountered while processing the frames into ascii frames: ", err)
 	}
@@ -66,7 +66,7 @@ func videoToFrames(vidPath, inputPath string) error {
 	return nil
 }
 
-func createAscii(inputDir, outputDir string, ac *ascii.AsciiConfig) error {
+func createAscii(inputDir, outputDir string, ac *ascii.AsciiConfig, cl images.CompressionLevel) error {
 	files, err := ioutil.ReadDir(inputDir)
 	if err != nil {
 		return err
@@ -94,7 +94,7 @@ func createAscii(inputDir, outputDir string, ac *ascii.AsciiConfig) error {
 				log.Fatal(err)
 			}
 
-			err = images.SaveImage(outputDir+f.Name(), ascii_img)
+			err = images.SaveImage(outputDir+f.Name(), ascii_img, cl)
 			if err != nil {
 				return err
 			}

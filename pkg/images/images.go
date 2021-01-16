@@ -10,13 +10,28 @@ import (
 	"strings"
 )
 
+type CompressionLevel int
+
 const (
 	JPEG = iota
 	PNG
+
+	BestCompression = iota
+	DefaultCompression
+	BestSpeed
 )
 
-var pngEnc = &png.Encoder{
-	CompressionLevel: png.BestCompression,
+func PNGCompressionLevel(level CompressionLevel) (png.CompressionLevel, error) {
+	switch level {
+	case BestCompression:
+		return png.BestCompression, nil
+	case BestSpeed:
+		return png.BestSpeed, nil
+	case DefaultCompression:
+		return png.DefaultCompression, nil
+	}
+
+	return 0, errors.New("Cannot convert compression level")
 }
 
 func ReadImage(path string) (image.Image, error) {
@@ -34,8 +49,13 @@ func ReadImage(path string) (image.Image, error) {
 	return m, nil
 }
 
-func SaveImage(path string, img image.Image) error {
+func SaveImage(path string, img image.Image, cls ...CompressionLevel) error {
 	pathLower := strings.ToLower(path)
+
+	var cl CompressionLevel
+	if len(cls) > 0 {
+		cl = cls[0]
+	}
 
 	var encodeMethod int
 	if strings.HasSuffix(pathLower, ".jpeg") || strings.HasSuffix(pathLower, ".jpg") {
@@ -58,6 +78,15 @@ func SaveImage(path string, img image.Image) error {
 			return err
 		}
 	case PNG:
+		pngCL, err := PNGCompressionLevel(cl)
+		if err != nil {
+			return err
+		}
+
+		var pngEnc = &png.Encoder{
+			CompressionLevel: pngCL,
+		}
+
 		if err = pngEnc.Encode(toimg, img); err != nil {
 			return err
 		}

@@ -5,7 +5,7 @@ import (
 	"github.com/nadav-rahimi/ascii-image-creator/pkg/images"
 )
 
-func ConvertImage(imgPath, outputPath string, ac *ascii.AsciiConfig) error {
+func ConvertImage(imgPath, outputPath string, ac *ascii.AsciiConfig, cl images.CompressionLevel) error {
 	// Processes the video frames into ascii frames
 	img, err := images.ReadImage(imgPath)
 	if err != nil {
@@ -24,7 +24,7 @@ func ConvertImage(imgPath, outputPath string, ac *ascii.AsciiConfig) error {
 		return err
 	}
 
-	err = images.SaveImage(outputPath, ascii_img)
+	err = images.SaveImage(outputPath, ascii_img, cl)
 	if err != nil {
 		return err
 	}
