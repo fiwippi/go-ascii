@@ -1,6 +1,7 @@
 package ascii
 
 import (
+	"errors"
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
 	_ "github.com/golang/freetype/truetype"
@@ -52,15 +53,11 @@ func NewAsciiConfig() *AsciiConfig {
 	}
 }
 
-func pntToDPI(pnt float64) float64 {
-	return (6.756756756756757 * pnt) - 7.432432432432421
-}
-
-func drawAsciiChar(img *image.RGBA, x, y int, char string, c *freetype.Context, clr RGBA) error {
+func drawAsciiChar(img *image.RGBA, x, y int, char string, c *freetype.Context, fontsize float64, clr RGBA) error {
 	c.SetDst(img)
 	c.SetSrc(image.NewUniform(clr))
 
-	pt := freetype.Pt(x, y)
+	pt := freetype.Pt(x, y+int(c.PointToFixed(fontsize)>>6))
 	if _, err := c.DrawString(char, pt); err != nil {
 		return err
 	}
@@ -87,24 +84,31 @@ func (ac *AsciiConfig) GenerateAsciiImage(width, height int, getColour func(x, y
 	// Read the font data
 	bounds := image.Rect(0, 0, width, height)
 
-	f, err := truetype.Parse(ac.FontBytes)
+	f, err := freetype.ParseFont(ac.FontBytes)
 	if err != nil {
 		return nil, err
 	}
 
 	// Create the font context
 	c := freetype.NewContext()
-	c.SetDPI(pntToDPI(ac.FontSize))
+	c.SetDPI(96)
 	c.SetFont(f)
+	c.SetFontSize(ac.FontSize)
 	c.SetClip(bounds.Bounds())
 
 	// Get the pixel width and height of the font
 	opts := truetype.Options{Size: ac.FontSize}
 	face := truetype.NewFace(f, &opts)
 
-	fontWidthPixelFixed, _ := face.GlyphAdvance(rune('█'))
-	fontWidthPixel := fontWidthPixelFixed.Ceil()
-	fontHeightPixel := face.Metrics().Ascent.Round()
+	// Height
+	fontHeightPixel := face.Metrics().Height.Ceil() + face.Metrics().Descent.Ceil()
+
+	// Width
+	glyphBounds, _, found := face.GlyphBounds(rune('█'))
+	if !found {
+		return nil, errors.New("Failed getting font face width")
+	}
+	fontWidthPixel := glyphBounds.Max.X.Ceil() + face.Metrics().Descent.Ceil()
 
 	// Create a new image to hold the ascii characters
 	ascii_img := image.NewRGBA(bounds)
@@ -137,7 +141,7 @@ func (ac *AsciiConfig) GenerateAsciiImage(width, height int, getColour func(x, y
 				}
 
 				// Get the ascii string for the corresponding brightness value
-				err = drawAsciiChar(ascii_img, x, y, ac.brightnessToAscii(uint8(interpolatedBrightness)), c, clr)
+				err = drawAsciiChar(ascii_img, x, y, ac.brightnessToAscii(uint8(interpolatedBrightness)), c, ac.FontSize, clr)
 				if err != nil {
 					return nil, err
 				}

@@ -51,4 +51,4 @@ if err != nil {
 
 - [x] video interpolation
 - [x] alpha channel support + ability to draw on a transparent background
-- [ ] render fonts less blurry
+- [x] render fonts less blurry
