@@ -3,8 +3,8 @@ package convertor
 import (
 	"fmt"
 	"github.com/cheggaaa/pb/v3"
-	"github.com/nadav-rahimi/ascii-image-creator/pkg/ascii"
-	"github.com/nadav-rahimi/ascii-image-creator/pkg/images"
+	"github.com/fiwippi/ascii-image-creator/pkg/ascii"
+	"github.com/fiwippi/ascii-image-creator/pkg/images"
 	"io/ioutil"
 	"log"
 	"os"

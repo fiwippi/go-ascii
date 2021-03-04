@@ -1,8 +1,8 @@
 package convertor
 
 import (
-	"github.com/nadav-rahimi/ascii-image-creator/pkg/ascii"
-	"github.com/nadav-rahimi/ascii-image-creator/pkg/images"
+	"github.com/fiwippi/ascii-image-creator/pkg/ascii"
+	"github.com/fiwippi/ascii-image-creator/pkg/images"
 )
 
 func ConvertImage(imgPath, outputPath string, ac *ascii.AsciiConfig, cl images.CompressionLevel) error {

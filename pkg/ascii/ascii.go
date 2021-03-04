@@ -4,10 +4,8 @@ import (
 	"errors"
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
-	_ "github.com/golang/freetype/truetype"
-	"golang.org/x/image/draw"
 	"image"
-	_ "image/draw"
+	"image/draw"
 	_ "io/ioutil"
 )
 
@@ -76,7 +74,7 @@ func (ac *AsciiConfig) brightnessToAscii(b uint8) string {
 		ascii = " .:-=+*#%@"
 	}
 
-	index := int(float32(b) / 255 * float32(len(ascii)-1))
+	index := int(float32(b) / 255 * float32(len(ascii))) // - 1
 	return string(ascii[index])
 }
 

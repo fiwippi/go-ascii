@@ -7,10 +7,10 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"github.com/fiwippi/ascii-image-creator/pkg/ascii"
+	"github.com/fiwippi/ascii-image-creator/pkg/images"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/markbates/pkger"
-	"github.com/nadav-rahimi/ascii-image-creator/pkg/ascii"
-	"github.com/nadav-rahimi/ascii-image-creator/pkg/images"
 	"io/ioutil"
 	"log"
 	"os"
@@ -31,7 +31,7 @@ func main() {
 	flag.StringVar(&outputPath, "output", "", "Name of the output image/video you want to make e.g. 'test.jpg'. Images may be jpeg or png")
 	flag.StringVar(&charset, "charset", "limited", "Type of charset you want to use, 'limited' or 'extended' or 'block'")
 	flag.StringVar(&fontPath, "font", "", "Path to a .ttf font file which the characters will be rendered as. If empty, 'Cascadia Code Mono Bold' is used")
-	flag.StringVar(&optimise, "optimise", "balanced", "Whether to optimise 'speed', 'balanced' or 'filesize' for the file encoding")
+	flag.StringVar(&optimise, "optimise", "balanced", "Whether to optimise 'speed', 'balanced' or 'size' for the file encoding")
 	flag.Float64Var(&fontSize, "fontsize", 14, "Font size in points (NOT pixels)")
 	flag.Float64Var(&intpf, "intpf", 0.6, "Interpolation factor to use, between 1 (none) to 0 (max) interpolation")
 	flag.BoolVar(&overwrite, "overwrite", false, "Whether to automatically overwrite the output file if one already exists without prompting")
@@ -101,7 +101,7 @@ func main() {
 		encoding = images.DefaultCompression
 	} else if optimise == "speed" {
 		encoding = images.BestSpeed
-	} else if optimise == "filesize" {
+	} else if optimise == "size" {
 		encoding = images.BestCompression
 	}
 
