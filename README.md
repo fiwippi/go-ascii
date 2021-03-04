@@ -1,14 +1,13 @@
-## ascii-image-creator
+# Ascii Image Creator
+## Overview
+Library which takes an image as input and returns the image made out of coloured ascii characters
 
-library which takes an image as input and returns the image made out of coloured ascii characters
-
-### installation
-
+## Install
 ```
 go get github.com/nadav-rahimi/ascii-image-creator
 ```
 
-### usage
+## Usage
 ```go
 // Get the font file as bytes and reading its data
 fontBytes, err := ioutil.ReadFile("font_file.ttf")
@@ -47,8 +46,10 @@ if err != nil {
 }
 ```
 
-### todo 
+## Examples
+![example 1](assets/1.jpeg)
 
-- [x] video interpolation
-- [x] alpha channel support + ability to draw on a transparent background
-- [x] render fonts less blurry
+![example 2](assets/2.jpeg)
+
+## License
+MIT
