@@ -38,3 +38,4 @@ Takes an image or video as input and returns it made out of ascii text character
 
 ### todo
 - [ ] Support for multiple image formats
+- [ ] Sync.Pools for memory
