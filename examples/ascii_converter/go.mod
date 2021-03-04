@@ -8,9 +8,10 @@ require (
 	github.com/gabriel-vasile/mimetype v1.1.2
 	github.com/markbates/pkger v0.17.1
 	github.com/mattn/go-runewidth v0.0.10 // indirect
-	github.com/nadav-rahimi/ascii-image-creator v0.0.0-20201221174344-da7f44856268
+	github.com/fiwippi/ascii-image-creator //
 	github.com/rivo/uniseg v0.2.0 // indirect
 	golang.org/x/sys v0.0.0-20210113181707-4bcb84eeeb78 // indirect
 )
 
-replace github.com/nadav-rahimi/ascii-image-creator => ../../
+replace github.com/fiwippi/ascii-image-creator => ../../
+//replace github.com/fiwippi/ascii-image-creator => ../../
