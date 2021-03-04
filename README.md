@@ -4,7 +4,7 @@ Library which takes an image as input and returns the image made out of coloured
 
 ## Install
 ```
-go get github.com/nadav-rahimi/ascii-image-creator
+go get github.com/fiwippi/ascii-image-creator
 ```
 
 ## Usage
@@ -50,6 +50,10 @@ if err != nil {
 ![example 1](assets/1.jpeg)
 
 ![example 2](assets/2.jpeg)
+
+## TODO
+- [ ] fluid sim
+- [ ] metaballs
 
 ## License
 MIT
