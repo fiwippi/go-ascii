@@ -1,4 +1,4 @@
-module github.com/fiwippi/ascii-image-creator
+module github.com/fiwippi/go-ascii
 
 go 1.14
 

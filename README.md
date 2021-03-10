@@ -1,10 +1,10 @@
-# Ascii Image Creator
-## Overview [![GoDoc](https://godoc.org/github.com/fiwippi/ascii-image-creator?status.svg)](https://godoc.org/github.com/fiwippi/ascii-image-creator)
+# Go Ascii
+## Overview [![GoDoc](https://godoc.org/github.com/fiwippi/go-ascii?status.svg)](https://godoc.org/github.com/fiwippi/go-ascii)
 Library which takes an image as input and returns the image made out of coloured ascii characters
 
 ## Install
 ```
-go get github.com/fiwippi/ascii-image-creator
+go get github.com/fiwippi/go-ascii
 ```
 
 ## Usage
