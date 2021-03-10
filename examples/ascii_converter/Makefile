@@ -20,5 +20,4 @@ build:
 		CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GOBUILD) -o bin/$(BINARY_NAME)_windows
 clean:
 		$(GOCLEAN)
-		rm -f bin/$(BINARY_NAME)_linux
-		rm -f bin/$(BINARY_NAME)_windows
+		rm -R bin
