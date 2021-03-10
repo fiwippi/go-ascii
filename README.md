@@ -1,5 +1,5 @@
 # Ascii Image Creator
-## Overview
+## Overview [![GoDoc](https://godoc.org/github.com/fiwippi/ascii-image-creator?status.svg)](https://godoc.org/github.com/fiwippi/ascii-image-creator)
 Library which takes an image as input and returns the image made out of coloured ascii characters
 
 ## Install
@@ -51,9 +51,11 @@ if err != nil {
 
 ![example 2](assets/2.jpeg)
 
-## TODO
-- [ ] fluid sim
-- [ ] metaballs
-
 ## License
 MIT
+
+## Credits
+```
+Portions of this software are copyright © 2010 The FreeType
+Project (www.freetype.org).  All rights reserved.
+```
