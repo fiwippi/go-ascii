@@ -141,32 +141,30 @@ func (ac *AsciiConfig) GenerateAsciiImage(width, height int, getColour func(x, y
 	draw.Draw(ascii_img, ascii_img.Bounds(), background, image.Point{}, draw.Over)
 
 	// Draw the new image
-	for y := bounds.Min.Y; y < height; y++ {
-		for x := bounds.Min.X; x < width; x++ {
-			if x%fontWidthPixel == 0 && y%fontHeightPixel == 0 {
-				// Get the colour
-				clr := getColour(x, y)
+	for y := bounds.Min.Y; y < height; y += fontHeightPixel {
+		for x := bounds.Min.X; x < width; x += fontWidthPixel {
+			// Get the colour
+			clr := getColour(x, y)
 
-				// Get a brightness value for the image
-				brightness := 0.299*float64(clr.R) + 0.587*float64(clr.G) + 0.114*float64(clr.B)
+			// Get a brightness value for the image
+			brightness := 0.299*float64(clr.R) + 0.587*float64(clr.G) + 0.114*float64(clr.B)
 
-				// Interpolate the value if interpolation is turned on
-				var interpolatedBrightness = brightness
-				if ac.Interpolate {
-					// If interpolation memory exists for this pixel then interpolate the brightness
-					if oldBrightness, found := ac.InterpMemory[Coord{x, y}]; found {
-						interpolatedBrightness = (float64(brightness) * (1 - ac.InterpWeight)) + (float64(oldBrightness) * ac.InterpWeight)
-					}
-
-					// Store the brightness value in memory
-					ac.InterpMemory[Coord{x, y}] = interpolatedBrightness
+			// Interpolate the value if interpolation is turned on
+			var interpolatedBrightness = brightness
+			if ac.Interpolate {
+				// If interpolation memory exists for this pixel then interpolate the brightness
+				if oldBrightness, found := ac.InterpMemory[Coord{x, y}]; found {
+					interpolatedBrightness = (float64(brightness) * (1 - ac.InterpWeight)) + (float64(oldBrightness) * ac.InterpWeight)
 				}
 
-				// Get the ascii string for the corresponding brightness value
-				err = drawAsciiChar(ascii_img, x, y, ac.brightnessToAscii(uint8(interpolatedBrightness)), c, ac.FontSize, clr)
-				if err != nil {
-					return nil, err
-				}
+				// Store the brightness value in memory
+				ac.InterpMemory[Coord{x, y}] = interpolatedBrightness
+			}
+
+			// Get the ascii string for the corresponding brightness value
+			err = drawAsciiChar(ascii_img, x, y, ac.brightnessToAscii(uint8(interpolatedBrightness)), c, ac.FontSize, clr)
+			if err != nil {
+				return nil, err
 			}
 		}
 	}
