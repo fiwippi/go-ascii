@@ -3,7 +3,7 @@ module fluids
 go 1.15
 
 require (
-	github.com/fiwippi/ascii-image-creator v0.0.0-20210304131048-eb297b6f34bc
+	github.com/fiwippi/go-ascii v0.0.0-20210310021828-132f96979863
 	github.com/gobuffalo/here v0.6.2 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/markbates/pkger v0.17.1
@@ -13,4 +13,4 @@ require (
 	golang.org/x/term v0.0.0-20210220032956-6a3ed077a48d // indirect
 )
 
-replace github.com/fiwippi/ascii-image-creator => ../../
+replace github.com/fiwippi/go-ascii => ../../

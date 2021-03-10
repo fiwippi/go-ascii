@@ -3,8 +3,8 @@ package fluids
 import (
 	"errors"
 	"fmt"
-	"github.com/fiwippi/ascii-image-creator/pkg/ascii"
-	"github.com/fiwippi/ascii-image-creator/pkg/images"
+	"github.com/fiwippi/go-ascii/pkg/ascii"
+	"github.com/fiwippi/go-ascii/pkg/images"
 	"github.com/schollz/progressbar/v3"
 	"image"
 	"io/ioutil"
