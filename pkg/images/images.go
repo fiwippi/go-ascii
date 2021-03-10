@@ -10,17 +10,22 @@ import (
 	"strings"
 )
 
+// Signifies how compressed the image
+// should be, three levels are available
 type CompressionLevel int
 
 const (
+	// Image type
 	JPEG = iota
 	PNG
 
+	// Compression type
 	BestCompression = iota
 	DefaultCompression
 	BestSpeed
 )
 
+// Converts the compression level to a png compression level
 func PNGCompressionLevel(level CompressionLevel) (png.CompressionLevel, error) {
 	switch level {
 	case BestCompression:
@@ -34,6 +39,7 @@ func PNGCompressionLevel(level CompressionLevel) (png.CompressionLevel, error) {
 	return 0, errors.New("Cannot convert compression level")
 }
 
+// Returns an image from a file
 func ReadImage(path string) (image.Image, error) {
 	reader, err := os.Open(path)
 	if err != nil {
@@ -49,6 +55,8 @@ func ReadImage(path string) (image.Image, error) {
 	return m, nil
 }
 
+// Saves a jpeg or png image to a file with a given
+// compression leve, these levels only work for png images
 func SaveImage(path string, img image.Image, cls ...CompressionLevel) error {
 	pathLower := strings.ToLower(path)
 
