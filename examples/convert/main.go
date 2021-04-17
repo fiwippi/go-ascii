@@ -1,7 +1,5 @@
 package main
 
-// TODO redo help commandsin the readme
-
 import (
 	"bufio"
 	_ "embed"
