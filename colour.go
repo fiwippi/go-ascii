@@ -1,5 +1,7 @@
 package ascii
 
+import "image"
+
 // Colour struct used to draw the characters
 type RGBA struct {
 	R, G, B, A uint8
@@ -17,4 +19,13 @@ func (rgba RGBA) RGBA() (uint32, uint32, uint32, uint32) {
 	a |= a << 8
 
 	return r, g, b, a
+}
+
+// Wrapper for the generate parameter to get the colours from an image
+func ImgColours(img image.Image) func(x, y int) RGBA {
+	return func(x, y int) RGBA {
+		r, g, b, a := img.At(x, y).RGBA()
+		r, g, b, a = r>>8, g>>8, b>>8, a>>8 // Colours
+		return RGBA{uint8(r), uint8(g), uint8(b), uint8(a)}
+	}
 }

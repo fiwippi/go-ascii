@@ -3,8 +3,7 @@ package fluids
 import (
 	"errors"
 	"fmt"
-	"github.com/fiwippi/go-ascii/pkg/ascii"
-	"github.com/fiwippi/go-ascii/pkg/images"
+	"github.com/fiwippi/go-ascii"
 	"github.com/schollz/progressbar/v3"
 	"image"
 	"io/ioutil"
@@ -235,7 +234,7 @@ func (g Grid) saveGridImage(ac *ascii.AsciiConfig, name string) error {
 	}
 
 	// Save the image
-	err = images.SaveImage(name, ascii_img, images.BestSpeed)
+	err = SaveImage(name, ascii_img)
 	if err != nil {
 		return err
 	}

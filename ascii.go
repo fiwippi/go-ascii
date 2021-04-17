@@ -9,10 +9,10 @@ import (
 )
 
 const (
-	CHAR_SET_LIMITED  = iota // Use the limited character set: " .:-=+*#%@"
-	CHAR_SET_EXTENDED        // Use the extended character set: ".'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
-	CHAR_SET_BLOCK           // Use the block character set: "█"
-	CHAR_SET_CUSTOM          // Use a custom character set supplied through AsciiConfig.CustomChatSet
+	CharSetLimited  = iota // Use the limited character set: " .:-=+*#%@"
+	CharSetExtended        // Use the extended character set: ".'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
+	CharSetBlock           // Use the block character set: "█"
+	CharSetCustom          // Use a custom character set supplied through AsciiConfig.CustomChatSet
 )
 
 // Coordinates of a pixel. Used in AsciiConfig to remember the colour
@@ -48,7 +48,7 @@ type AsciiConfig struct {
 // Creates a new ascii config struct with default settings
 func NewAsciiConfig() *AsciiConfig {
 	return &AsciiConfig{
-		CharSet:      CHAR_SET_LIMITED,
+		CharSet:      CharSetLimited,
 		FontSize:     14,
 		FontBytes:    nil,
 		Interpolate:  true,
@@ -72,16 +72,16 @@ func drawAsciiChar(img *image.RGBA, x, y int, char string, c *freetype.Context, 
 
 // Returns an appropriate ascii string based on the brightness of a pixel
 func (ac *AsciiConfig) brightnessToAscii(b uint8) string {
-	if ac.CharSet == CHAR_SET_BLOCK {
+	if ac.CharSet == CharSetBlock {
 		return "█"
 	}
 
 	var ascii string
-	if ac.CharSet == CHAR_SET_EXTENDED {
+	if ac.CharSet == CharSetExtended {
 		ascii = ".'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
-	} else if ac.CharSet == CHAR_SET_LIMITED {
+	} else if ac.CharSet == CharSetLimited {
 		ascii = " .:-=+*#%@"
-	} else if ac.CharSet == CHAR_SET_CUSTOM {
+	} else if ac.CharSet == CharSetCustom {
 		if len(ac.CustomCharSet) < 1 {
 			return ""
 		}
@@ -99,7 +99,7 @@ func (ac *AsciiConfig) brightnessToAscii(b uint8) string {
 func (ac *AsciiConfig) GenerateAsciiImage(width, height int, getColour func(x, y int) RGBA) (image.Image, error) {
 	// Ensure the interpolation memory exists
 	if ac.Interpolate && ac.InterpMemory == nil {
-		return nil, errors.New("No interpolation memory is available, either create this memory or turn interpolation off")
+		return nil, errors.New("no interpolation memory is available, either create this memory or turn interpolation off")
 	}
 
 	// Parse the initial image data
@@ -126,19 +126,19 @@ func (ac *AsciiConfig) GenerateAsciiImage(width, height int, getColour func(x, y
 	fontHeightPixel := face.Metrics().Height.Ceil() + face.Metrics().Descent.Ceil()
 
 	// Width
-	glyphBounds, _, found := face.GlyphBounds(rune('█'))
+	glyphBounds, _, found := face.GlyphBounds('█')
 	if !found {
-		return nil, errors.New("Failed getting font face width")
+		return nil, errors.New("failed getting font face width")
 	}
 	fontWidthPixel := glyphBounds.Max.X.Ceil() + face.Metrics().Descent.Ceil()
 
 	// Create a new image to hold the ascii characters
-	ascii_img := image.NewRGBA(bounds)
+	asciiImg := image.NewRGBA(bounds)
 	var background = image.Black
 	if ac.Transparency {
 		background = image.Transparent
 	}
-	draw.Draw(ascii_img, ascii_img.Bounds(), background, image.Point{}, draw.Over)
+	draw.Draw(asciiImg, asciiImg.Bounds(), background, image.Point{}, draw.Over)
 
 	// Draw the new image
 	for y := bounds.Min.Y; y < height; y += fontHeightPixel {
@@ -162,12 +162,12 @@ func (ac *AsciiConfig) GenerateAsciiImage(width, height int, getColour func(x, y
 			}
 
 			// Get the ascii string for the corresponding brightness value
-			err = drawAsciiChar(ascii_img, x, y, ac.brightnessToAscii(uint8(interpolatedBrightness)), c, ac.FontSize, clr)
+			err = drawAsciiChar(asciiImg, x, y, ac.brightnessToAscii(uint8(interpolatedBrightness)), c, ac.FontSize, clr)
 			if err != nil {
 				return nil, err
 			}
 		}
 	}
 
-	return ascii_img, nil
+	return asciiImg, nil
 }

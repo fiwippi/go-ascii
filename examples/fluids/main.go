@@ -1,20 +1,19 @@
-//go:generate pkger
-
 package main
 
 import (
 	"bufio"
+	_ "embed"
 	"flag"
-	fluids "fluids/pkg"
 	"fmt"
-	"github.com/fiwippi/go-ascii/pkg/ascii"
-	"github.com/fiwippi/go-ascii/pkg/images"
-	"github.com/markbates/pkger"
-	"io/ioutil"
+	"github.com/fiwippi/go-ascii"
+	fluids "github.com/fiwippi/go-ascii/examples/fluids/pkg"
 	"log"
 	"os"
 	"strings"
 )
+
+//go:embed assets/CascadiaMono-Bold.ttf
+var fontBytes []byte
 
 func main() {
 	// Variables for the runtime flags
@@ -54,26 +53,15 @@ func main() {
 		}
 	}
 
-	// Load the default font
-	var fontBytes []byte
-	f, err := pkger.Open("/assets/CascadiaMono-Bold.ttf")
-	if err != nil {
-		log.Fatal("Error loading font: ", err)
-	}
-	fontBytes, err = ioutil.ReadAll(f)
-	if err != nil {
-		log.Fatal("Error reading font data: ", err)
-	}
-
 	// Create the ascii config
 	ac := ascii.NewAsciiConfig()
-	ac.CharSet = ascii.CHAR_SET_EXTENDED
+	ac.CharSet = ascii.CharSetExtended
 	ac.CustomCharSet = "MWKXY#"
 	ac.FontSize = fontSize
 	ac.FontBytes = fontBytes
 
 	// Read in the input image
-	img, err := images.ReadImage(inputPath)
+	img, err := fluids.ReadImage(inputPath)
 	if err != nil {
 		log.Fatal(img, err)
 	}

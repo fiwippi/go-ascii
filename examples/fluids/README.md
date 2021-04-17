@@ -3,6 +3,11 @@
 Takes an input image and simulates all coloured pixels as fluids falling down.
 **ffmpeg must be in your path**.
 
+### Build
+```sh
+make build
+```
+
 ### Options
 ```
 -fontsize float
@@ -25,6 +30,3 @@ Takes an input image and simulates all coloured pixels as fluids falling down.
 
 #### Output (Random Colours)
 ![output](assets/spiral.gif)
-
-### Build
-1. Run `make`

@@ -1,17 +1,16 @@
-package convertor
+package convert
 
 import (
 	"fmt"
 	"github.com/cheggaaa/pb/v3"
-	"github.com/fiwippi/go-ascii/pkg/ascii"
-	"github.com/fiwippi/go-ascii/pkg/images"
+	"github.com/fiwippi/go-ascii"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 )
 
-func ConvertVideo(vidPath, outputPath string, ac *ascii.AsciiConfig, cl images.CompressionLevel) error {
+func ConvertVideo(vidPath, outputPath string, ac *ascii.AsciiConfig) error {
 	// Creating the input and output temp directories
 	var framesDir, asciiFramesDir string
 	var err error
@@ -42,7 +41,7 @@ func ConvertVideo(vidPath, outputPath string, ac *ascii.AsciiConfig, cl images.C
 
 	// Processes the video frames into ascii frames
 	fmt.Println("Processing frames:")
-	err = createAscii(framesDir, asciiFramesDir, ac, cl)
+	err = createAscii(framesDir, asciiFramesDir, ac)
 	if err != nil {
 		log.Fatal("Error encountered while processing the frames into ascii frames: ", err)
 	}
@@ -66,7 +65,7 @@ func videoToFrames(vidPath, inputPath string) error {
 	return nil
 }
 
-func createAscii(inputDir, outputDir string, ac *ascii.AsciiConfig, cl images.CompressionLevel) error {
+func createAscii(inputDir, outputDir string, ac *ascii.AsciiConfig) error {
 	files, err := ioutil.ReadDir(inputDir)
 	if err != nil {
 		return err
@@ -77,7 +76,7 @@ func createAscii(inputDir, outputDir string, ac *ascii.AsciiConfig, cl images.Co
 		if f.Name() != ".gitkeep" {
 			fp := inputDir + f.Name()
 
-			img, err := images.ReadImage(fp)
+			img, err := ReadImage(fp)
 			if err != nil {
 				return err
 			}
@@ -89,12 +88,12 @@ func createAscii(inputDir, outputDir string, ac *ascii.AsciiConfig, cl images.Co
 			}
 
 			width, height := img.Bounds().Max.X, img.Bounds().Max.Y
-			ascii_img, err := ac.GenerateAsciiImage(width, height, generate)
+			asciiImg, err := ac.GenerateAsciiImage(width, height, generate)
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			err = images.SaveImage(outputDir+f.Name(), ascii_img, cl)
+			err = SaveImage(outputDir+f.Name(), asciiImg)
 			if err != nil {
 				return err
 			}

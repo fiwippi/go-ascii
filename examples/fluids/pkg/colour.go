@@ -1,7 +1,7 @@
 package fluids
 
 import (
-	"github.com/fiwippi/go-ascii/pkg/ascii"
+	"github.com/fiwippi/go-ascii"
 	"github.com/lucasb-eyer/go-colorful"
 	"math/rand"
 )
