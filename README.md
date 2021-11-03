@@ -10,23 +10,20 @@ go get github.com/fiwippi/go-ascii
 ## Usage
 ```go
 // Get the font file as bytes and reading its data
-fontBytes, err := ioutil.ReadFile("font_file.ttf")
+fb, err := os.ReadFile("font_file.ttf")
 if err != nil {
     log.Fatal("Error reading font data: ", err)
 }
 
 // Set up the ascii config
-ac := &ascii.AsciiConfig{
-    CharSet:   ascii.CHAR_SET_LIMITED,
-    FontBytes: fontBytes,
-    FontSize:  14,
-}
+ac := NewAsciiConfig()
+ac.FontBytes = fb
 
 // Read in an image...
 
 // Generate the ascii image
 width, height := img.Bounds().Max.X, img.Bounds().Max.Y
-ascii_img, err := ac.GenerateAsciiImage(width, height, ascii.ImgColours(img))
+asciiImg, err := ac.GenerateAsciiImage(width, height, ascii.ImgColours(img))
 if err != nil {
     log.Fatal(err)
 }
