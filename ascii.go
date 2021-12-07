@@ -2,10 +2,11 @@ package ascii
 
 import (
 	"errors"
-	"github.com/golang/freetype"
-	"github.com/golang/freetype/truetype"
 	"image"
 	"image/draw"
+
+	"github.com/golang/freetype"
+	"github.com/golang/freetype/truetype"
 )
 
 const (
@@ -15,13 +16,15 @@ const (
 	CharSetCustom          // Use a custom character set supplied through AsciiConfig.CustomChatSet
 )
 
+// TODO remove need for FreeType
+
 // Coordinates of a pixel. Used in AsciiConfig to remember the colour
 // of pixels at old coordinates so that their colour can be interpolated
-type Coord struct {
+type coord struct {
 	X, Y int
 }
 
-// Holds data used to render ascii images
+// AsciiConfig holds data used to render ascii images
 type AsciiConfig struct {
 	// Which charset to use in order to render the image
 	CharSet int
@@ -37,7 +40,7 @@ type AsciiConfig struct {
 	// 1 will draw a constant colour so use any colours smaller than one
 	InterpWeight float64
 	// Slice holding the old brightness values for interpolation
-	InterpMemory map[Coord]float64
+	InterpMemory map[coord]float64
 	// Whether to draw on a transparent background, as opposed to the default black
 	Transparency bool
 	// A string of the custom charset, the left (0 index) of the
@@ -45,7 +48,7 @@ type AsciiConfig struct {
 	CustomCharSet string
 }
 
-// Creates a new ascii config struct with default settings
+// NewAsciiConfig creates a new ascii config struct with default settings
 func NewAsciiConfig() *AsciiConfig {
 	return &AsciiConfig{
 		CharSet:      CharSetLimited,
@@ -53,11 +56,11 @@ func NewAsciiConfig() *AsciiConfig {
 		FontBytes:    nil,
 		Interpolate:  true,
 		InterpWeight: 0.4,
-		InterpMemory: make(map[Coord]float64),
+		InterpMemory: make(map[coord]float64),
 	}
 }
 
-// Draws a string character on a specific position at the image
+// drawAsciiChar draws a string character on a specific position at the image
 func drawAsciiChar(img *image.RGBA, x, y int, char string, c *freetype.Context, fontsize float64, clr RGBA) error {
 	c.SetDst(img)
 	c.SetSrc(image.NewUniform(clr))
@@ -70,7 +73,7 @@ func drawAsciiChar(img *image.RGBA, x, y int, char string, c *freetype.Context, 
 	return nil
 }
 
-// Returns an appropriate ascii string based on the brightness of a pixel
+// brightnessToAscii returns an appropriate ascii string based on the brightness of a pixel
 func (ac *AsciiConfig) brightnessToAscii(b uint8) string {
 	if ac.CharSet == CharSetBlock {
 		return "█"
@@ -92,10 +95,19 @@ func (ac *AsciiConfig) brightnessToAscii(b uint8) string {
 	return string(ascii[index])
 }
 
-// Generates an ascii image based on the configured AsciiConfig. This function uses getColour() to identify
-// what colour should each pixel be and then draws the ascii characters in that colour. Check the README if
-// you want to use getColour to draw a new ascii image from the existing one, if you want to use it to draw
-// other simulations like state machines then check examples/fluid to find out how to do that
+// ConvertImage converts a given image into ascii based on the configured AsciiConfig
+func (ac *AsciiConfig) ConvertImage(img image.Image) (image.Image, error) {
+	width, height := img.Bounds().Max.X, img.Bounds().Max.Y
+	asciiImg, err := ac.GenerateAsciiImage(width, height, ImgColours(img))
+	if err != nil {
+		return nil, err
+	}
+	return asciiImg, nil
+}
+
+// GenerateAsciiImage generates an ascii image based on the configured AsciiConfig. This function uses getColour() to identify
+// what colour should each pixel be and then draws the ascii characters in that colour. This function is more low-leve than
+// ConverTImage and it can be used to draw other simulations like state machines, check ./examples/fluids for more details
 func (ac *AsciiConfig) GenerateAsciiImage(width, height int, getColour func(x, y int) RGBA) (image.Image, error) {
 	// Ensure the interpolation memory exists
 	if ac.Interpolate && ac.InterpMemory == nil {
@@ -153,12 +165,12 @@ func (ac *AsciiConfig) GenerateAsciiImage(width, height int, getColour func(x, y
 			var interpolatedBrightness = brightness
 			if ac.Interpolate {
 				// If interpolation memory exists for this pixel then interpolate the brightness
-				if oldBrightness, found := ac.InterpMemory[Coord{x, y}]; found {
+				if oldBrightness, found := ac.InterpMemory[coord{x, y}]; found {
 					interpolatedBrightness = (float64(brightness) * (1 - ac.InterpWeight)) + (float64(oldBrightness) * ac.InterpWeight)
 				}
 
 				// Store the brightness value in memory
-				ac.InterpMemory[Coord{x, y}] = interpolatedBrightness
+				ac.InterpMemory[coord{x, y}] = interpolatedBrightness
 			}
 
 			// Get the ascii string for the corresponding brightness value

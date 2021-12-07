@@ -1,0 +1,2 @@
+Portions of this software are copyright © 2010 The FreeType
+Project (www.freetype.org).  All rights reserved.

@@ -22,8 +22,7 @@ ac.FontBytes = fb
 // Read in an image...
 
 // Generate the ascii image
-width, height := img.Bounds().Max.X, img.Bounds().Max.Y
-asciiImg, err := ac.GenerateAsciiImage(width, height, ascii.ImgColours(img))
+asciiImg, err := ac.ConvertImage(img)
 if err != nil {
     log.Fatal(err)
 }
@@ -35,10 +34,4 @@ if err != nil {
 ![example 2](assets/2.jpeg)
 
 ## License
-`MIT`
-
-## Credits
-```
-Portions of this software are copyright © 2010 The FreeType
-Project (www.freetype.org).  All rights reserved.
-```
+`BSD-3-Clause`
