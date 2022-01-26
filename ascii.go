@@ -2,184 +2,96 @@ package ascii
 
 import (
 	"errors"
+	"fmt"
 	"image"
 	"image/draw"
 
-	"github.com/golang/freetype"
-	"github.com/golang/freetype/truetype"
+	"golang.org/x/image/font"
+	"golang.org/x/image/font/opentype"
+	"golang.org/x/image/math/fixed"
 )
 
-const (
-	CharSetLimited  = iota // Use the limited character set: " .:-=+*#%@"
-	CharSetExtended        // Use the extended character set: ".'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
-	CharSetBlock           // Use the block character set: "█"
-	CharSetCustom          // Use a custom character set supplied through AsciiConfig.CustomChatSet
-)
-
-// TODO remove need for FreeType
-
-// Coordinates of a pixel. Used in AsciiConfig to remember the colour
-// of pixels at old coordinates so that their colour can be interpolated
-type coord struct {
-	X, Y int
-}
-
-// AsciiConfig holds data used to render ascii images
-type AsciiConfig struct {
-	// Which charset to use in order to render the image
-	CharSet int
-	// The fontsize to draw in points (NOT pixels)
-	FontSize float64
-	// The bytes of a .ttf font which will be used to draw characters
-	// on the image, example on loading a font is in the README.md
-	FontBytes []byte
-	// Whether to interpolate the colours, this makes the image smoother
-	// but may introduce a delay in some cases
-	Interpolate bool
-	// How strong should the interpolation be 0-1 where 0 = no interpolation,
-	// 1 will draw a constant colour so use any colours smaller than one
-	InterpWeight float64
-	// Slice holding the old brightness values for interpolation
-	InterpMemory map[coord]float64
-	// Whether to draw on a transparent background, as opposed to the default black
-	Transparency bool
-	// A string of the custom charset, the left (0 index) of the
-	// string is shown when the brightness is low and vice versa
-	CustomCharSet string
-}
-
-// NewAsciiConfig creates a new ascii config struct with default settings
-func NewAsciiConfig() *AsciiConfig {
-	return &AsciiConfig{
-		CharSet:      CharSetLimited,
-		FontSize:     14,
-		FontBytes:    nil,
-		Interpolate:  true,
-		InterpWeight: 0.4,
-		InterpMemory: make(map[coord]float64),
-	}
-}
-
-// drawAsciiChar draws a string character on a specific position at the image
-func drawAsciiChar(img *image.RGBA, x, y int, char string, c *freetype.Context, fontsize float64, clr RGBA) error {
-	c.SetDst(img)
-	c.SetSrc(image.NewUniform(clr))
-
-	// Converts the coordinates to the fixed.Int26_6 coordinates that freetype uses
-	pt := freetype.Pt(x, y+int(c.PointToFixed(fontsize)>>6))
-	if _, err := c.DrawString(char, pt); err != nil {
-		return err
-	}
-	return nil
-}
-
-// brightnessToAscii returns an appropriate ascii string based on the brightness of a pixel
-func (ac *AsciiConfig) brightnessToAscii(b uint8) string {
-	if ac.CharSet == CharSetBlock {
-		return "█"
-	}
-
-	var ascii string
-	if ac.CharSet == CharSetExtended {
-		ascii = ".'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
-	} else if ac.CharSet == CharSetLimited {
-		ascii = " .:-=+*#%@"
-	} else if ac.CharSet == CharSetCustom {
-		if len(ac.CustomCharSet) < 1 {
-			return ""
+// Convert draws a given image using ascii characters based on the parameters
+// in conf. If you want to interpolate the characters you can supply the memory.
+// This will make the change in characters between frames look more natural.
+func Convert(img image.Image, conf Config, memory *Memory) (image.Image, error) {
+	// Validate interpolation params
+	var interpolate bool
+	if memory != nil {
+		if conf.InterpolateWeight < 0 || conf.InterpolateWeight > 1 {
+			return nil, fmt.Errorf("interpolation weight should be between 0 and 1 (inclusive)")
 		}
-		ascii = ac.CustomCharSet
+
+		interpolate = true
+		if memory.data == nil {
+			memory.Reset()
+		}
 	}
 
-	index := min(int(float64(b)/254*float64(len(ascii))), len(ascii)-1)
-	return string(ascii[index])
-}
-
-// ConvertImage converts a given image into ascii based on the configured AsciiConfig
-func (ac *AsciiConfig) ConvertImage(img image.Image) (image.Image, error) {
-	width, height := img.Bounds().Max.X, img.Bounds().Max.Y
-	asciiImg, err := ac.GenerateAsciiImage(width, height, ImgColours(img))
-	if err != nil {
-		return nil, err
-	}
-	return asciiImg, nil
-}
-
-// GenerateAsciiImage generates an ascii image based on the configured AsciiConfig. This function uses getColour() to identify
-// what colour should each pixel be and then draws the ascii characters in that colour. This function is more low-leve than
-// ConverTImage and it can be used to draw other simulations like state machines, check ./examples/fluids for more details
-func (ac *AsciiConfig) GenerateAsciiImage(width, height int, getColour func(x, y int) RGBA) (image.Image, error) {
-	// Ensure the interpolation memory exists
-	if ac.Interpolate && ac.InterpMemory == nil {
-		return nil, errors.New("no interpolation memory is available, either create this memory or turn interpolation off")
+	// Ensure the font exists
+	if conf.Font == nil {
+		return nil, fmt.Errorf("no font specified")
 	}
 
-	// Parse the initial image data
-	bounds := image.Rect(0, 0, width, height)
-
-	// Read the font data
-	f, err := freetype.ParseFont(ac.FontBytes)
+	// Create the font face
+	opts := &opentype.FaceOptions{
+		Size:    conf.FontSize,
+		DPI:     72,
+		Hinting: 0,
+	}
+	face, err := opentype.NewFace(conf.Font, opts)
 	if err != nil {
 		return nil, err
 	}
 
-	// Create the font context
-	c := freetype.NewContext()
-	c.SetDPI(96)
-	c.SetFont(f)
-	c.SetFontSize(ac.FontSize)
-	c.SetClip(bounds.Bounds())
-
-	// Get the pixel width and height of the font
-	opts := truetype.Options{Size: ac.FontSize}
-	face := truetype.NewFace(f, &opts)
-
-	// Height
-	fontHeightPixel := face.Metrics().Height.Ceil() + face.Metrics().Descent.Ceil()
-
-	// Width
+	// Calculate the font width and height
+	height := face.Metrics().Ascent.Round()
 	glyphBounds, _, found := face.GlyphBounds('█')
 	if !found {
 		return nil, errors.New("failed getting font face width")
 	}
-	fontWidthPixel := glyphBounds.Max.X.Ceil() + face.Metrics().Descent.Ceil()
+	width := glyphBounds.Max.X.Round()
 
-	// Create a new image to hold the ascii characters
-	asciiImg := image.NewRGBA(bounds)
+	// Create the new image
+	bounds := img.Bounds()
+	newImg := image.NewRGBA(bounds)
 	var background = image.Black
-	if ac.Transparency {
+	if conf.Transparency {
 		background = image.Transparent
 	}
-	draw.Draw(asciiImg, asciiImg.Bounds(), background, image.Point{}, draw.Over)
+	draw.Draw(newImg, bounds.Bounds(), background, image.Point{}, draw.Over)
 
-	// Draw the new image
-	for y := bounds.Min.Y; y < height; y += fontHeightPixel {
-		for x := bounds.Min.X; x < width; x += fontWidthPixel {
+	// Draw onto the new image
+	for y := bounds.Min.Y; y < bounds.Max.Y; y += height {
+		for x := bounds.Min.X; x < bounds.Max.X; x += width {
 			// Get the colour
-			clr := getColour(x, y)
+			clr := img.At(x, y)
+			r, g, b, a := img.At(x, y).RGBA()
+			r, g, b, a = r>>8, g>>8, b>>8, a>>8
 
 			// Get a brightness value for the image
-			brightness := 0.299*float64(clr.R) + 0.587*float64(clr.G) + 0.114*float64(clr.B)
+			brightness := 0.299*float64(r) + 0.587*float64(g) + 0.114*float64(b)
 
 			// Interpolate the value if interpolation is turned on
-			var interpolatedBrightness = brightness
-			if ac.Interpolate {
+			if interpolate {
 				// If interpolation memory exists for this pixel then interpolate the brightness
-				if oldBrightness, found := ac.InterpMemory[coord{x, y}]; found {
-					interpolatedBrightness = (float64(brightness) * (1 - ac.InterpWeight)) + (float64(oldBrightness) * ac.InterpWeight)
+				if oldBrightness, found := memory.data[coord{x, y}]; found {
+					brightness = (brightness * (1 - conf.InterpolateWeight)) + (oldBrightness * conf.InterpolateWeight)
 				}
 
 				// Store the brightness value in memory
-				ac.InterpMemory[coord{x, y}] = interpolatedBrightness
+				memory.data[coord{x, y}] = brightness
 			}
 
-			// Get the ascii string for the corresponding brightness value
-			err = drawAsciiChar(asciiImg, x, y, ac.brightnessToAscii(uint8(interpolatedBrightness)), c, ac.FontSize, clr)
-			if err != nil {
-				return nil, err
-			}
+			// Draw the string
+			(&font.Drawer{
+				Dst:  newImg,
+				Src:  image.NewUniform(clr),
+				Face: face,
+				Dot:  fixed.P(x, y),
+			}).DrawString(conf.CharSet.parseBrightness(uint8(brightness)))
 		}
 	}
 
-	return asciiImg, nil
+	return newImg, nil
 }

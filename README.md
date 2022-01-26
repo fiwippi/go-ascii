@@ -1,6 +1,6 @@
 # Go Ascii
-## Overview [![GoDoc](https://godoc.org/github.com/fiwippi/go-ascii?status.svg)](https://godoc.org/github.com/fiwippi/go-ascii)
-Library which takes an image as input and returns the image made out of coloured ascii characters
+## Overview
+Library which renders images using ascii characters
 
 ## Install
 ```
@@ -8,21 +8,52 @@ go get github.com/fiwippi/go-ascii
 ```
 
 ## Usage
+### Default
 ```go
-// Get the font file as bytes and reading its data
-fb, err := os.ReadFile("font_file.ttf")
-if err != nil {
-    log.Fatal("Error reading font data: ", err)
-}
-
-// Set up the ascii config
-ac := NewAsciiConfig()
-ac.FontBytes = fb
-
 // Read in an image...
 
 // Generate the ascii image
-asciiImg, err := ac.ConvertImage(img)
+conf := ascii.DefaultConfig()
+asciiImg, err := ascii.Convert(img, conf, nil)
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+### With Interpolation
+```go
+// Given a slice of images
+
+// Generate the interpolated images
+mem := &ascii.Memory{}
+conf := ascii.DefaultConfig()
+for _, img := range images {
+    asciiImg, err := ascii.Convert(img, conf, mem)
+    if err != nil {
+        log.Fatalln(err)
+    }
+}
+```
+
+### With Custom Font
+⚠️ - `go-ascii` expects monospace fonts!
+```go
+// Read in the font file
+data, err := os.ReadFile("font_file.ttf")
+if err != nil {
+    log.Fatal(err)
+}
+
+// Parse the font
+font, err := opentype.Parse(data)
+if err != nil {
+    log.Fatal(err)
+}
+
+// Perform the conversion
+conf := ascii.DefaultConfig()
+conf.Font = font
+asciiImg, err := ascii.Convert(img, conf, nil)
 if err != nil {
     log.Fatal(err)
 }
