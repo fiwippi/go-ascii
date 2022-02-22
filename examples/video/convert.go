@@ -18,8 +18,6 @@ import (
 	"video/internal/parse"
 )
 
-// TODO does it handle invalid args correctly
-
 func Convert(ctx context.Context, conf ascii.Config, src, dst string, args ...string) error {
 	imgD, ffDuration, ffProgress, errD := decode(ctx, src)
 	imgE, errE := encode(ctx, dst, args...)
