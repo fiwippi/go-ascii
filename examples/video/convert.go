@@ -15,10 +15,17 @@ import (
 
 func Convert(ctx context.Context, conf ascii.Config, src, dst string, args ...string) error {
 	imgD, errD := decode(ctx, src)
-	imgE, errE := encode(ctx, conf, dst, args...)
+	imgE, errE := encode(ctx, dst, args...)
 
+	mem := &ascii.Memory{}
 	for img := range imgD {
-		imgE <- img
+		asciiImg, err := ascii.Convert(img, conf, mem)
+		if err != nil {
+			close(imgE)
+			return err
+		}
+
+		imgE <- asciiImg
 	}
 	close(imgE)
 
@@ -33,7 +40,7 @@ func Convert(ctx context.Context, conf ascii.Config, src, dst string, args ...st
 	return nil
 }
 
-func encode(ctx context.Context, conf ascii.Config, path string, args ...string) (chan<- image.Image, <-chan error) {
+func encode(ctx context.Context, path string, args ...string) (chan<- image.Image, <-chan error) {
 	// Make the channels
 	errC := make(chan error, 1)
 	imgC := make(chan image.Image)
@@ -66,8 +73,6 @@ func encode(ctx context.Context, conf ascii.Config, path string, args ...string)
 	go func() {
 		defer close(errC)
 
-		mem := &ascii.Memory{}
-
 		stdin, err := cmd.StdinPipe()
 		if err != nil {
 			errC <- fmtCmdErr(err, e)
@@ -82,13 +87,7 @@ func encode(ctx context.Context, conf ascii.Config, path string, args ...string)
 		}
 
 		for img := range imgC {
-			asciiImg, err := ascii.Convert(img, conf, mem)
-			if err != nil {
-				errC <- fmtCmdErr(err, e)
-				return
-			}
-
-			err = png.Encode(stdin, asciiImg)
+			err = png.Encode(stdin, img)
 			if err != nil {
 				errC <- fmtCmdErr(err, e)
 				return
