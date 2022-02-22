@@ -27,7 +27,10 @@ func Convert(ctx context.Context, conf ascii.Config, src, dst string, args ...st
 	if err != nil {
 		return err
 	}
-	defer s.Stop()
+	defer func() {
+		s.Message("100%")
+		s.Stop()
+	}()
 
 	go func() {
 		err = s.Start()
@@ -80,7 +83,7 @@ func encode(ctx context.Context, path string, args ...string) (chan<- image.Imag
 	// Process the extra args
 	var cmdArgs []string
 	cmdArgs = append(cmdArgs,
-		"-hide_banner", "-loglevel", "info",
+		"-hide_banner", "-loglevel", "error",
 		"-f", "image2pipe", "-c:v", "png", "-i", "-",
 		"-y", "-an", "-pix_fmt", "yuv420p",
 	)
