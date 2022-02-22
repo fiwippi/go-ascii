@@ -9,7 +9,7 @@ $ go build
 ```
 
 ### usage
-⚠️ - `-args` shouldn't contain spaces since they're interpreted as the delimiter between args, e.g. `-args="-metadata title='HAS SPACE'"`
+⚠️ - args shouldn't contain spaces since they're interpreted as a delimiter, e.g. `-args="-metadata title='HAS SPACE'"`
 ```console
 $ ./video --help
 Usage: ./video -i in.mp4 out.mp4
