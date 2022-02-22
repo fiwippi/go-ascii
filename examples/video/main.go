@@ -8,9 +8,6 @@ import (
 	"log"
 	"os"
 	"strings"
-	"time"
-
-	"github.com/theckman/yacspin"
 
 	"github.com/fiwippi/go-ascii"
 )
@@ -53,27 +50,15 @@ func main() {
 		}
 	}
 
-	// Start the spinner
-	s, err := createSpinner()
-	if err != nil {
-		panic(err)
-	}
-	err = s.Start()
-	if err != nil {
-		panic(err)
-	}
-
 	// Perform the conversion
 	conf := ascii.DefaultConfig()
 	conf.FontSize = *fontsize
 	args := strings.Split(*stringArgs, " ")
 
-	err = Convert(context.Background(), conf, *src, output, args...)
+	err := Convert(context.Background(), conf, *src, output, args...)
 	if err != nil {
-		s.Stop()
 		log.Fatalln(err)
 	}
-	s.Stop()
 }
 
 func exists(fp string) bool {
@@ -81,19 +66,4 @@ func exists(fp string) bool {
 		return false
 	}
 	return true
-}
-
-func createSpinner() (*yacspin.Spinner, error) {
-	cfg := yacspin.Config{
-		Frequency:       100 * time.Millisecond,
-		CharSet:         yacspin.CharSets[59],
-		Suffix:          " Processing",
-		SuffixAutoColon: true,
-		Message:         "",
-		StopMessage:     "Done",
-		StopCharacter:   "✓",
-		StopColors:      []string{"fgGreen"},
-	}
-
-	return yacspin.New(cfg)
 }
