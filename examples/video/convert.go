@@ -50,7 +50,7 @@ func encode(ctx context.Context, path string, args ...string) (chan<- image.Imag
 	cmdArgs = append(cmdArgs,
 		"-hide_banner", "-loglevel", "error",
 		"-f", "image2pipe", "-c:v", "png", "-i", "-",
-		"-y",
+		"-y", "-an",
 	)
 	cmdArgs = append(cmdArgs, args...)
 	cmdArgs = append(cmdArgs, path)
