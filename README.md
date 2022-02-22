@@ -64,5 +64,9 @@ if err != nil {
 
 ![example 2](assets/2.jpeg)
 
+To convert videos check out the example at [examples/video](examples/video)
+
+![example 3](examples/video/assets/explosion.gif)
+
 ## License
 `BSD-3-Clause`
