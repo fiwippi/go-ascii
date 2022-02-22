@@ -8,11 +8,12 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
+
+	"github.com/theckman/yacspin"
 
 	"github.com/fiwippi/go-ascii"
 )
-
-// TODO spinner?
 
 func main() {
 	// Create Flags
@@ -37,7 +38,7 @@ func main() {
 	}
 
 	if *src == "" {
-		fmt.Println("Input file not specified")
+		fmt.Println("Input file not specified!")
 		os.Exit(1)
 	}
 
@@ -47,21 +48,31 @@ func main() {
 		fmt.Print("Would you like to overwrite the file? (y/N): ")
 		scanner.Scan()
 		if strings.ToLower(strings.TrimSpace(scanner.Text())) != "y" {
-			fmt.Println("File already exists")
+			fmt.Println("File already exists!")
 			os.Exit(1)
 		}
 	}
+
+	// Start the spinner
+	s, err := createSpinner()
+	if err != nil {
+		panic(err)
+	}
+	err = s.Start()
+	if err != nil {
+		panic(err)
+	}
+	defer s.Stop()
 
 	// Perform the conversion
 	conf := ascii.DefaultConfig()
 	conf.FontSize = *fontsize
 	args := strings.Split(*stringArgs, " ")
 
-	err := Convert(context.Background(), conf, *src, output, args...)
+	err = Convert(context.Background(), conf, *src, output, args...)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Println("Done!")
 }
 
 func exists(fp string) bool {
@@ -69,4 +80,19 @@ func exists(fp string) bool {
 		return false
 	}
 	return true
+}
+
+func createSpinner() (*yacspin.Spinner, error) {
+	cfg := yacspin.Config{
+		Frequency:       100 * time.Millisecond,
+		CharSet:         yacspin.CharSets[59],
+		Suffix:          " Processing",
+		SuffixAutoColon: true,
+		Message:         "",
+		StopMessage:     "Done",
+		StopCharacter:   "✓",
+		StopColors:      []string{"fgGreen"},
+	}
+
+	return yacspin.New(cfg)
 }
