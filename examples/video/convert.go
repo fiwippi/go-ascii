@@ -26,16 +26,23 @@ func Convert(ctx context.Context, conf ascii.Config, src, dst string, args ...st
 		}
 
 		imgE <- asciiImg
+		err = <-errE
+		if err != nil {
+			close(imgE)
+			return err
+		}
 	}
 	close(imgE)
 
-	err := <-errD
-	if err != nil {
-		return fmt.Errorf("decode: %w", err)
-	}
-	err = <-errE
-	if err != nil {
-		return fmt.Errorf("encode: %w", err)
+	select {
+	case err := <-errD:
+		if err != nil {
+			return fmt.Errorf("decode: %w", err)
+		}
+	case err := <-errE:
+		if err != nil {
+			return fmt.Errorf("encode: %w", err)
+		}
 	}
 	return nil
 }
@@ -92,11 +99,11 @@ func encode(ctx context.Context, path string, args ...string) (chan<- image.Imag
 				errC <- fmtCmdErr(err, e)
 				return
 			}
+			errC <- nil // Send an acknowledgement the image encoded successfully
 		}
-
 		stdin.Close()
-		err = cmd.Wait()
 
+		err = cmd.Wait()
 		if err != nil {
 			errC <- fmtCmdErr(err, e)
 			return
