@@ -62,7 +62,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer s.Stop()
 
 	// Perform the conversion
 	conf := ascii.DefaultConfig()
@@ -71,8 +70,10 @@ func main() {
 
 	err = Convert(context.Background(), conf, *src, output, args...)
 	if err != nil {
+		s.Stop()
 		log.Fatalln(err)
 	}
+	s.Stop()
 }
 
 func exists(fp string) bool {
