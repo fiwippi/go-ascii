@@ -1,33 +1,16 @@
 package ascii
 
-type CharSet int
+// Charset is the set of characters which go-ascii
+// uses to convert a pixel into an ascii character.
+//
+// The leftmost character is used to render the darkest
+// pixel (black) and the rightmost is used for the
+// lightest pixel (white). As the brightness the index
+// of the character used increases to the right
+type Charset string
 
 const (
-	CharSetLimited  CharSet = iota // Use the limited character set: " .:-=+*#%@"
-	CharSetExtended                // Use the extended character set: ".'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
-	CharSetBlock                   // Use the block character set: "█"
+	CharsetLimited  Charset = " .:-=+*#%@"
+	CharsetExtended         = ".'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
+	CharsetBlock            = "█"
 )
-
-// parseBrightness returns an appropriate ascii string based on
-// the brightness of a value in the range 0-254
-func (cs CharSet) parseBrightness(b uint8) string {
-	var ascii string
-	switch cs {
-	case CharSetLimited:
-		ascii = " .:-=+*#%@"
-	case CharSetExtended:
-		ascii = ".'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
-	case CharSetBlock:
-		return "█"
-	}
-
-	index := min(int(float64(b)/254*float64(len(ascii))), len(ascii)-1)
-	return string(ascii[index])
-}
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}

@@ -8,8 +8,6 @@ import (
 	"log"
 	"os"
 	"strings"
-
-	"github.com/fiwippi/go-ascii"
 )
 
 func main() {
@@ -51,11 +49,8 @@ func main() {
 	}
 
 	// Perform the conversion
-	conf := ascii.DefaultConfig()
-	conf.FontSize = *fontsize
 	args := strings.Split(*stringArgs, " ")
-
-	err := Convert(context.Background(), conf, *src, output, args...)
+	err := Convert(context.Background(), *src, output, *fontsize, args...)
 	if err != nil {
 		log.Fatalln(err)
 	}

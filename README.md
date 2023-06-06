@@ -1,65 +1,60 @@
-# Go Ascii
+# Go-Ascii
+
 ## Overview
+
 Library which renders images using ascii characters
 
 ## Install
+
 ```
 go get github.com/fiwippi/go-ascii
 ```
 
 ## Usage
+
+Errors ignored for brevity
+
 ### Default
+
 ```go
 // Read in an image...
+img := ...
 
-// Generate the ascii image
-conf := ascii.DefaultConfig()
-asciiImg, err := ascii.Convert(img, conf, nil)
-if err != nil {
-    log.Fatal(err)
-}
+// Generate the ascii version
+asciiImg, _ := ascii.Convert(img)
 ```
 
 ### With Interpolation
+
 ```go
 // Given a slice of images
+images := ...
 
 // Generate the interpolated images
 mem := &ascii.Memory{}
-conf := ascii.DefaultConfig()
 for _, img := range images {
-    asciiImg, err := ascii.Convert(img, conf, mem)
-    if err != nil {
-        log.Fatalln(err)
-    }
+    asciiImg, _ := ascii.ConvertWithOpts(img, ascii.Interpolate(Mem))
 }
 ```
 
 ### With Custom Font
-⚠️ - `go-ascii` expects monospace fonts!
+
+> **Warning**
+> `go-ascii` expects monospace fonts!
+
 ```go
 // Read in the font file
-data, err := os.ReadFile("font_file.ttf")
-if err != nil {
-    log.Fatal(err)
-}
+data, _ := os.ReadFile("font_file.ttf")
 
 // Parse the font
-font, err := opentype.Parse(data)
-if err != nil {
-    log.Fatal(err)
-}
+font, _ := opentype.Parse(data)
 
 // Perform the conversion
-conf := ascii.DefaultConfig()
-conf.Font = font
-asciiImg, err := ascii.Convert(img, conf, nil)
-if err != nil {
-    log.Fatal(err)
-}
+asciiImg, _ := ascii.ConvertWithOpts(img, ascii.Font(font))
 ```
 
 ## Examples
+
 ![example 1](assets/1.jpeg)
 
 ![example 2](assets/2.jpeg)
@@ -69,4 +64,5 @@ To convert videos check out the example at [examples/video](examples/video)
 ![example 3](examples/video/assets/explosion.gif)
 
 ## License
+
 `BSD-3-Clause`

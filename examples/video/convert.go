@@ -18,7 +18,7 @@ import (
 	"video/internal/parse"
 )
 
-func Convert(ctx context.Context, conf ascii.Config, src, dst string, args ...string) error {
+func Convert(ctx context.Context, src, dst string, fontsize float64, args ...string) error {
 	imgD, ffDuration, ffProgress, errD := decode(ctx, src)
 	imgE, errE := encode(ctx, dst, args...)
 
@@ -47,7 +47,8 @@ func Convert(ctx context.Context, conf ascii.Config, src, dst string, args ...st
 	// Handle the decoding/encoding
 	mem := &ascii.Memory{}
 	for img := range imgD {
-		asciiImg, err := ascii.Convert(img, conf, mem)
+		asciiImg, err := ascii.ConvertWithOpts(img,
+			ascii.FontPts(fontsize), ascii.Interpolate(mem))
 		if err != nil {
 			close(imgE)
 			return err
